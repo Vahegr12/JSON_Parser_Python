@@ -1,0 +1,19 @@
+{
+	"student": {
+		"name": "Vahe",
+		"age": 20,
+		"address": {
+			"street": "123 Main St",
+			"city": ["Hrazdan", "Yerevan"],
+			"region": "Kotaik" 
+		},
+		"hobbies": ["C++", "Robotix"],
+	},
+	"school": {
+        "name": "university",
+        "address": {
+            "street": "Azatutyan",
+            "number": 24
+        }
+    }
+}
