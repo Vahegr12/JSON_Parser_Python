@@ -60,14 +60,6 @@ def dict_to_str(dictionary, indent_level=0):
            
     return dict_str
 
-def str_to_arr(str_in):
-    # Remove extra spaces between elements and split the string
-    arr = str_in.replace(" ", "").split(",")
-
-    # Remove empty elements (if any)
-    arr = [element.strip() for element in arr if element.strip()]
-
-    return arr
 
 # User Functions 
 def print_data(file):
@@ -154,7 +146,7 @@ def add_data(file, path):
         ans = input(prompt)
         while ans not in ['y', 'n', 'N', 'Y']:
             ans = input("Incorrect command, enter 'y' or 'n': ")
-        return ans == 'y' or ans == 'Y'
+        return ans in ['y', 'Y']
 
     if len(key) == 1:
         if obj.get(key[0]) != None:
@@ -169,11 +161,11 @@ def add_data(file, path):
                 return
         else:
             value = input("Enter the value (use ',' to separate values): ").replace(" ", "").split(",")
-            obj[key[0]] = value[0] if len(value) == 1 else value
+            obj[key[0]] += value[0] if len(value) == 1 else value
 
     elif len(key) == 2:
-        if obj.get(key[0]) != None:
-            if obj.get(key[0]).get(key[1]) != None:
+        if obj.get(key[0]) is not None:
+            if obj[key[0]].get(key[1]) is not None:
                 print("Key already exists")
                 print(key[0] + ' : ' + key[1] + ' : ', end='')
                 print(obj[key[0]][key[1]])
@@ -185,11 +177,16 @@ def add_data(file, path):
                     return
             else:
                 value = input("Enter the value (use ',' to separate values): ").replace(" ", "").split(",")
-                obj[key[0]][key[1]] = value[0] if len(value) == 1 else value
+                if len(value) == 1:
+                    obj[key[0]][key[1]] = value[0]
+                else:
+                    obj[key[0]][key[1]] = value
         else:
             value = input("Enter the value (use ',' to separate values): ").replace(" ", "").split(",")
-            obj[key[0]][key[1]] = value[0] if len(value) == 1 else value
-
+            if len(value) == 1:
+                obj[key[0]] = {key[1]: value[0]}
+            else:
+                obj[key[0]] = {key[1]: value}
     elif len(key) == 3:
         if obj.get(key[0]) != None:
             if obj.get(key[0]).get(key[1]) != None:
@@ -205,14 +202,25 @@ def add_data(file, path):
                         return
                 else:
                     value = input("Enter the value (use ',' to separate values): ").replace(" ", "").split(",")
-                    obj[key[0]][key[1]][key[2]] = value[0] if len(value) == 1 else value
+                    if len(value) == 1:
+                        obj[key[0]][key[1]][key[2]] = value[0]
+                    else:
+                        obj[key[0]][key[1]][key[2]] = value
             else:
                 value = input("Enter the value (use ',' to separate values): ").replace(" ", "").split(",")
-                obj[key[0]][key[1]][key[2]] = value[0] if len(value) == 1 else value
+                if len(value) == 1:
+                    obj[key[0]][key[1]][key[2]] = value[0]
+                else:
+                    obj[key[0]][key[1]][key[2]] = value
         else:
             value = input("Enter the value (use ',' to separate values): ").replace(" ", "").split(",")
-            obj[key[0]][key[1]][key[2]] = value[0] if len(value) == 1 else value
-
+            if len(value) == 1:
+                obj[key[0]][key[1]][key[2]] = value[0]
+            else:
+                obj[key[0]][key[1]][key[2]] = value
+    else:
+        print("Incorrect Key!")
+        return
   
 
     #reconvert object to string
