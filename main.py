@@ -76,7 +76,6 @@ def print_data(file):
     file.seek(0)
     data = file.read()
     
-   
     if len(data) == 0:
         print("JSON file is empty:")
         return
@@ -96,39 +95,32 @@ def edit_data(file, path):
     dict_in = str_to_dict(data_in)
     obj = dict_to_obj(dict_in)
 
-
     key = input("Enter the key to edit(use ':' for deep level): ").replace(" ", "")
     key = key.split(":") # key is array of key strings
 
-    if len(key) == 1 and obj.get(key[0]) != None:
-        print("key was found in 1 level")
-        value = input("Enter the value to edit (use ',' to separate values): ").replace(" ", "")
-        value = value.split(",") # value is array of value strings
-        if len(value) == 1:
-            obj[key[0]] = value[0]
-        elif len(value) > 1:
-            obj[key[0]] = value
+    key_levels = [obj]  # List to store the levels of nested dictionaries
 
-    elif len(key) == 2 and obj.get(key[0]) != None and obj.get(key[0]).get(key[1]) != None:
-        print("key was found in 2 level")
-        value = input("Enter the value to edit (use ',' to separate values): ").replace(" ", "")
-        value = value.split(",") # value is array of value strings
-        if len(value) == 1:
-            obj[key[0]][key[1]] = value[0]
-        elif len(value) > 1:
-            obj[key[0]][key[1]]= value
-    
-    elif len(key) == 3 and obj.get(key[0]) != None and obj.get(key[0]).get(key[1]) != None  and obj.get(key[0]).get(key[1]).get(key[2]) != None:
-        print("key was found in 3 level")
-        value = input("Enter the value to edit (use ',' to separate values): ").replace(" ", "")
-        value = value.split(",") # value is array of value strings
-        if len(value) == 1:
-            obj[key[0]][key[1]][key[2]] = value[0]
-        elif len(value) > 1:
-            obj[key[0]][key[1]][key[2]] = value
-    else:
-        print("Key wasn't found")
+    # Traverse through the levels of keys
+    for k in key[:-1]:
+        if key_levels[-1].get(k) == None:
+            print(f"Key '{k}' wasn't found")
+            return
+        key_levels.append(key_levels[-1][k])
+
+    # Check if the last key exists in the last level
+    if key[-1] not in key_levels[-1]:
+        print(f"Key '{key[-1]}' wasn't found")
         return
+
+    print(f"Key was found in {len(key_levels)} level(s)")
+    value = input("Enter the value to edit (use ',' to separate values): ").replace(" ", "")
+    value = value.split(",")  # value is an array of value strings
+
+    # Assign the value to the last key in the last level
+    if len(value) > 1:
+        key_levels[-1][key[-1]] = value
+    else:
+        key_levels[-1][key[-1]] = value[0]
 
     #reconvert object to string
     dict_out = obj_to_dict(obj)
@@ -158,103 +150,69 @@ def add_data(file, path):
     key = input("Enter the key to add(use ':' for deep level): ").replace(" ", "")
     key = key.split(":") # key is array of key strings
     
+    def check_input(prompt):
+        ans = input(prompt)
+        while ans not in ['y', 'n', 'N', 'Y']:
+            ans = input("Incorrect command, enter 'y' or 'n': ")
+        return ans == 'y' or ans == 'Y'
+
     if len(key) == 1:
         if obj.get(key[0]) != None:
-            print("key already exists")
-            print(key[0] + ' = ' + obj[key[0]])
+            print("Key already exists")
+            print(key[0] + ' : ', end="")
+            print(obj[key[0]])
             
-            ans = input("Change mode to edit? (enter 'y' to conform or 'n' to cancel): ").replace(" ", "")
-            
-            while ans != 'y' and ans != 'Y' and ans != 'n' and ans != "N":
-                ans = input("Incorrect command enter y/n: ")
-            
-            if ans == 'y' or ans == "Y":
+            if check_input("Change mode to edit? (enter 'y' to confirm or 'n' to cancel): "):
                 edit_data(file, path)
-            
             else:
-                print("-Canceled-")
+                print("- Canceled -")
                 return
         else:
-            value = input("Enter the value (use ',' to separate values): ").replace(" ", "")
-            value = value.split(",") # value is array of value strings
-            if len(value) == 1:
-                obj[key[0]] = value[0] 
-            else:
-                obj[key[0]] = value
+            value = input("Enter the value (use ',' to separate values): ").replace(" ", "").split(",")
+            obj[key[0]] = value[0] if len(value) == 1 else value
 
     elif len(key) == 2:
         if obj.get(key[0]) != None:
             if obj.get(key[0]).get(key[1]) != None:
-                print("key already exists")
-                print(key[0] + ' : ' + key[1] + ' = ' + obj[key[0]][key[1]])
+                print("Key already exists")
+                print(key[0] + ' : ' + key[1] + ' : ', end='')
+                print(obj[key[0]][key[1]])
 
-                ans = input("Change mode to edit? (enter 'y' to conform or 'n' to cancel): ").replace(" ", "")
-                
-                while ans != 'y' and ans != 'Y' and ans != 'n' and ans != "N":
-                    ans = input("Incorrect command enter y/n: ")
-                
-                if ans == 'y' or ans == "Y":
+                if check_input("Change mode to edit? (enter 'y' to confirm or 'n' to cancel): "):
                     edit_data(file, path)
-            
                 else:
-                    print("-Canceled-")
+                    print("- Canceled -")
                     return
             else:
-                value = input("Enter the value (use ',' to separate values): ").replace(" ", "")
-                value = value.split(",") # value is array of value strings
-                if len(value) == 1:
-                    obj[key[0]][key[1]] = value[0] 
-                else:
-                    obj[key[0]][key[1]] = value       
+                value = input("Enter the value (use ',' to separate values): ").replace(" ", "").split(",")
+                obj[key[0]][key[1]] = value[0] if len(value) == 1 else value
         else:
-            value = input("Enter the value (use ',' to separate values): ").replace(" ", "")
-            value = value.split(",") # value is array of value strings
-            if len(value) == 1:
-                obj[key[0]][key[1]] = value[0] 
-            else:
-                obj[key[0]][key[1]] = value
-            
+            value = input("Enter the value (use ',' to separate values): ").replace(" ", "").split(",")
+            obj[key[0]][key[1]] = value[0] if len(value) == 1 else value
+
     elif len(key) == 3:
         if obj.get(key[0]) != None:
             if obj.get(key[0]).get(key[1]) != None:
                 if obj.get(key[0]).get(key[1]).get(key[2]) != None:
-        
-                    print("key already exists")
-                    print(key[0] + ' : ' + key[1] + ' : ' + key[2] + ' = ' + obj[key[0]][key[1]][key[2]])
+                    print("Key already exists")
+                    print(key[0] + ' : ' + key[1] + ' : ' + key[2] + ' : ', end="")
+                    print(obj[key[0]][key[1]][key[2]])
 
-                    ans = input("Change mode to edit? (enter 'y' to conform or 'n' to cancel): ").replace(" ", "")
-                    
-                    while ans != 'y' and ans != 'Y' and ans != 'n' and ans != "N":
-                        ans = input("Incorrect command enter y/n: ")
-                    
-                    if ans == 'y' or ans == "Y":
+                    if check_input("Change mode to edit? (enter 'y' to confirm or 'n' to cancel): "):
                         edit_data(file, path)
-                    
                     else:
-                        print("-Canceled-")
+                        print("- Canceled -")
                         return
-                
                 else:
-                    value = input("Enter the value (use ',' to separate values): ").replace(" ", "")
-                    value = value.split(",") # value is array of value strings
-                    if len(value) == 1:
-                        obj[key[0]][key[1]][key[2]] = value[0] 
-                    else:
-                        obj[key[0]][key[1]][key[2]] = value
+                    value = input("Enter the value (use ',' to separate values): ").replace(" ", "").split(",")
+                    obj[key[0]][key[1]][key[2]] = value[0] if len(value) == 1 else value
             else:
-                value = input("Enter the value (use ',' to separate values): ").replace(" ", "")
-                value = value.split(",") # value is array of value strings
-                if len(value) == 1:
-                    obj[key[0]][key[1]][key[2]] = value[0] 
-                else:
-                    obj[key[0]][key[1]][key[2]] = value
+                value = input("Enter the value (use ',' to separate values): ").replace(" ", "").split(",")
+                obj[key[0]][key[1]][key[2]] = value[0] if len(value) == 1 else value
         else:
-            value = input("Enter the value (use ',' to separate values): ").replace(" ", "")
-            value = value.split(",") # value is array of value strings
-            if len(value) == 1:
-                obj[key[0]][key[1]][key[2]] = value[0] 
-            else:
-                obj[key[0]][key[1]][key[2]] = value
+            value = input("Enter the value (use ',' to separate values): ").replace(" ", "").split(",")
+            obj[key[0]][key[1]][key[2]] = value[0] if len(value) == 1 else value
+
   
 
     #reconvert object to string
@@ -285,52 +243,48 @@ def delete_data(file, path):
     key = input("Enter the key to delete (use ':' for deep level): ").replace(" ", "")
     key = key.split(":") # key is array of key strings
 
-    if len(key) == 1 and obj.get(key[0]) != None:
-        print("key was found in 1 level")
-        
-        ans = input("Delete? (enter 'y' to conform or 'n' to cancel): ").replace(" ", "")
-        
-        while ans != 'y' and ans != 'Y' and ans != 'n' and ans != "N":
-            ans = input("Incorrect command enter y/n: ")
-        
-        if ans == 'y' or ans == "Y":
+    def confirm_delete(key):
+        ans = input("Delete? (enter 'y' to confirm or 'n' to cancel): ").replace(" ", "")
+        while ans.lower() not in ['y', 'n']:
+            ans = input("Incorrect command. Enter 'y' for yes or 'n' for no: ")
+        return ans.lower() == 'y'
+
+
+    if len(key) == 1 and key[0] in obj:
+        print("Key was found at level 1")
+        print(key[0] + " : ", end="")
+        print(obj[key[0]])
+
+        if confirm_delete(key):
             del obj[key[0]]
-        
         else:
             print("-Canceled-")
             return
 
-    elif len(key) == 2 and obj.get(key[0]) != None and obj.get(key[0]).get(key[1]) != None:
-        print("key was found in 2 level")
-        
-        ans = input("Delete? (enter 'y' to conform or 'n' to cancel): ").replace(" ", "")
-        
-        while ans != 'y' and ans != 'Y' and ans != 'n' and ans != "N":
-            ans = input("Incorrect command enter y/n: ")
-        
-        if ans == 'y' or ans == "Y":
+    elif len(key) == 2 and key[0] in obj and key[1] in obj[key[0]]:
+        print("Key was found at level 2")
+        print(key[0] + " : " + key[1] + " : ", end="")
+        print(obj[key[0]][key[1]])
+
+        if confirm_delete(key):
             del obj[key[0]][key[1]]
-        
         else:
             print("-Canceled-")
             return
-    
-    elif len(key) == 3 and obj.get(key[0]) != None and obj.get(key[0]).get(key[1]) != None  and obj.get(key[0]).get(key[1]).get(key[2]) != None:
-        print("key was found in 2 level")
-        
-        ans = input("Delete? (enter 'y' to conform or 'n' to cancel): ").replace(" ", "")
-        
-        while ans != 'y' and ans != 'Y' and ans != 'n' and ans != "N":
-            ans = input("Incorrect command enter y/n: ")
-        
-        if ans == 'y' or ans == "Y":
+
+    elif len(key) == 3 and key[0] in obj and key[1] in obj[key[0]] and key[2] in obj[key[0]][key[1]]:
+        print("Key was found at level 3")
+        print(key[0] + " : " + key[1] + " : " + key[2] + " : ", end="")
+        print(obj[key[0]][key[1]][key[2]])
+
+        if confirm_delete(key):
             del obj[key[0]][key[1]][key[2]]
-        
         else:
             print("-Canceled-")
             return
+
     else:
-        print("key wasn't found!")
+        print("Key wasn't found!")
         return
 
     #reconvert object to string
